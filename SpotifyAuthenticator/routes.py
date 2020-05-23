@@ -38,6 +38,8 @@ This is the front end component
 
 def index():
   
+  session.pop('_flashes', None)
+
   u_id = os.environ.get("user_id")
   token = os.environ.get("oauth_token")
   time_expires = datetime.now()+timedelta(hours=1)
@@ -52,6 +54,7 @@ def index():
     }
     with open("credentials.json", 'w') as fp:
         json.dump(credentials, fp)
+    return redirect("/shutdown")
   return render_template('home.html')
 
 ######################################################
@@ -117,7 +120,7 @@ def spotify_authorized() -> str:
 
   session.pop('_flashes', None)
   flash("Successfully authenticated: {}".format(os.environ['username']), 'success')
-  return redirect("/shutdown")
+  return redirect("/")
 
 @application.route('/shutdown', methods=['GET','POST'])
 
