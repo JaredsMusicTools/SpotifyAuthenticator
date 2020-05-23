@@ -117,7 +117,16 @@ def spotify_authorized() -> str:
 
   session.pop('_flashes', None)
   flash("Successfully authenticated: {}".format(os.environ['username']), 'success')
-  return redirect("/")
+  return redirect("/shutdown")
+
+@application.route('/shutdown', methods=['GET','POST'])
+
+def shutdown():
+    function = request.environ.get('werkzeug.server.shutdown')
+    if(function is None):
+        raise RuntimeError("Not running the server!")
+    function()
+    return "Server shutting down...."
 
 @spotify.tokengetter
 

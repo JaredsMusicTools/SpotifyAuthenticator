@@ -26,13 +26,12 @@ setup(
     author_email='jareddyreson@csu.fullerton.edu',
     url='https://github.com/JaredDyreson/SpotifyAuthenticator',
     license='GNU GPL-3.0',
-    packages=[PKG_NAME],
     install_requires = [
       'Flask-OAuthlib==0.9.5',
-      'Flask==1.0.2'
+      'Flask==1.0.2',
+      'Werkzeug==0.16.1'
     ],
     include_package_data=True,
     zip_safe=False,
-    packages=find_packages()
-    classifiers=['Programming Language :: Python :: 3.8']
+    packages=find_packages(),
 )
