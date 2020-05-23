@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import find_packages, setup
 import os
 import sys
 
@@ -32,5 +32,7 @@ setup(
       'Flask==1.0.2'
     ],
     include_package_data=True,
+    zip_safe=False,
+    packages=find_packages()
     classifiers=['Programming Language :: Python :: 3.8']
 )

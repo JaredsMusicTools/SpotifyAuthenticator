@@ -1,0 +1,3 @@
+graft SpotifyAuthenticator/static
+graft SpotifyAuthenticator/templates
+global-exclude *.pyc
