@@ -4,6 +4,8 @@ from SpotifyAuthenticator import application, CredentialIngestor
 from datetime import datetime
 import threading
 
+CREDENTIAL_SAVED_PTH = "credentials.json"
+
 if __name__ == '__main__':
 
   thread = threading.Thread(target=application.run)
