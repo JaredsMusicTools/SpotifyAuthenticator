@@ -5,6 +5,7 @@ from datetime import datetime
 import os
 
 from SpotifyPlaylist import PlaylistManager
+from SpotifyAuthenticator import application
 
 class CredentialIngestor():
     def __init__(self, path: str):
