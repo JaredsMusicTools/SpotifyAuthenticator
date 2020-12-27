@@ -21,6 +21,7 @@ spotify = oauth.remote_app(
   consumer_key=application.config['consumer_key'],
   consumer_secret=application.config['consumer_secret'],
   request_token_params={'scope': '{}'.format(' '.join(scope))},
+  # request_token_params={'scope': f'{' '.join(scope)}'},
   base_url='https://accounts.spotify.com',
   request_token_url=None,
   access_token_url='/api/token',
@@ -37,10 +38,11 @@ This is the front end component
 @application.route("/", methods=['GET', 'POST'])
 
 def index():
-  
+
   session.pop('_flashes', None)
 
   u_id = os.environ.get("user_id")
+  u_name = os.environ.get("username")
   token = os.environ.get("oauth_token")
   time_expires = datetime.now()+timedelta(hours=1)
 
@@ -49,6 +51,7 @@ def index():
   else:
     credentials = {
       "user_id": u_id,
+      "username": u_name,
       "oauth_token":  token,
       "time_expires": time_expires.strftime("%m/%d/%Y %H:%M:%S")
     }

@@ -4,7 +4,6 @@ import json
 from datetime import datetime
 import os
 
-from SpotifyPlaylist import PlaylistManager
 from SpotifyAuthenticator import application
 
 class CredentialIngestor():
@@ -22,6 +21,9 @@ class CredentialIngestor():
     def get_user_id(self) -> str:
         return self.map['user_id']
 
+    def get_username(self) -> str:
+        return self.map['username']
+
     def get_credential_hash(self) -> str:
         return self.map['oauth_token']
 
@@ -30,17 +32,3 @@ class CredentialIngestor():
 
     def is_expired(self, time: datetime) -> bool:
         return self.expire_time < time
-
-def generate_manager(credential_path: str):
-  if(os.path.exists(credential_path)):
-    credential_manager = CredentialIngestor(credential_path)
-    if(credential_manager.is_expired(datetime.now())):
-      application.run()
-  else:
-    application.run()
-    credential_manager = CredentialIngestor(credential_path)
-
-  return PlaylistManager(
-      credential_manager.user_id,
-      credential_manager.credential_hash
-  )
