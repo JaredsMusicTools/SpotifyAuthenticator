@@ -5,11 +5,18 @@ PKG_NAME = "SpotifyAuthenticator"
 
 application = Flask(PKG_NAME)
 
-try:
-  application.config['SECRET_KEY'] = os.environ.get('SPOTIFY_SECRET_KEY')
-  application.config['consumer_key'] = os.environ.get('SPOTIFY_AUTHENTICATOR_CLIENT_ID')
-  application.config['consumer_secret'] = os.environ.get('SPOTIFY_AUTHENTICATOR_CLIENT_SECRET')
-except KeyError as invalid_key:
-    raise KeyError("[-] You need to set {} in your shell's configuration file".format(invalid_key))
+configuration_path = "configuration.json"
+
+if(not os.path.exists(configuration_path)):
+    raise ValueError(f'[ERROR] Cannot find configuration at {configuration_path}')
+
+with open(configuration_path, "r") as fp:
+    content = json.load(fp)
+
+client_secret, client_id = content["client_secret"], content["client_id"]
+
+application.config['SECRET_KEY'] = "84c1c81be6f347629bf01b97fbbe883c"
+application.config['consumer_key'] = client_id
+application.config['consumer_secret'] = client_secret
 
 from SpotifyAuthenticator import routes

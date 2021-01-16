@@ -21,7 +21,6 @@ spotify = oauth.remote_app(
   consumer_key=application.config['consumer_key'],
   consumer_secret=application.config['consumer_secret'],
   request_token_params={'scope': '{}'.format(' '.join(scope))},
-  # request_token_params={'scope': f'{' '.join(scope)}'},
   base_url='https://accounts.spotify.com',
   request_token_url=None,
   access_token_url='/api/token',
