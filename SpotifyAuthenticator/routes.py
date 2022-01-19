@@ -7,8 +7,9 @@ import os
 import json
 import requests
 import werkzeug
+import typing
+import types
 from datetime import datetime, timedelta
-from pprint import pprint as pp
 
 ######################################################################################
 
@@ -17,47 +18,49 @@ oauth = OAuth(application)
 scope = ['playlist-modify-public', 'user-library-read', 'user-library-modify', 'user-follow-read', 'user-read-private', 'user-top-read']
 
 spotify = oauth.remote_app(
-  'spotify',
-  consumer_key=application.config['consumer_key'],
-  consumer_secret=application.config['consumer_secret'],
-  request_token_params={'scope': '{}'.format(' '.join(scope))},
-  base_url='https://accounts.spotify.com',
-  request_token_url=None,
-  access_token_url='/api/token',
-  authorize_url='https://accounts.spotify.com/authorize'
+    'spotify',
+    consumer_key=application.config['consumer_key'],
+    consumer_secret=application.config['consumer_secret'],
+    request_token_params = {
+        'scope': f'{" ".join(scope)}'
+    },
+    base_url='https://accounts.spotify.com',
+    request_token_url=None,
+    access_token_url='/api/token',
+    authorize_url='https://accounts.spotify.com/authorize'
 )
 
 ######################################################################################
 
-"""
-This is the front end component
-"""
-
-
 @application.route("/", methods=['GET', 'POST'])
 
 def index():
+    """
+    User facing component
+    """
 
-  session.pop('_flashes', None)
+    session.pop('_flashes', None)
 
-  u_id = os.environ.get("user_id")
-  u_name = os.environ.get("username")
-  token = os.environ.get("oauth_token")
-  time_expires = datetime.now()+timedelta(hours=1)
+    user_id = os.environ.get("user_id")
+    user_name = os.environ.get("username")
+    token = os.environ.get("oauth_token")
+    time_expires = datetime.now() + timedelta(hours=1)
 
-  if((u_id is None) or (token is None)):
-    flash("Please authenticate yourself", 'danger')
-  else:
-    credentials = {
-      "user_id": u_id,
-      "username": u_name,
-      "oauth_token":  token,
-      "time_expires": time_expires.strftime("%m/%d/%Y %H:%M:%S")
-    }
-    with open("credentials.json", 'w') as fp:
-        json.dump(credentials, fp)
-    return redirect("/shutdown")
-  return render_template('home.html')
+    if not user_id or not token:
+        flash("Please authenticate yourself", 'danger')
+    else:
+        credentials = {
+            "user_id": user_id,
+            "username": user_name,
+            "oauth_token":  token,
+            "time_expires": time_expires.strftime("%m/%d/%Y %H:%M:%S")
+        }
+
+        with open("credentials.json", 'w', encoding="utf-8") as file_pointer:
+            json.dump(credentials, file_pointer)
+
+        return redirect("/shutdown")
+    return render_template('home.html')
 
 ######################################################
 
@@ -68,72 +71,85 @@ This is where the back end authenticator will go
 @application.route('/spot/')
 
 def spot_index() -> werkzeug.wrappers.response.Response:
+    """
+    Base address of the site
+    """
 
-  """
-  Base address of the site 
-  """
-  return redirect(url_for('login'))
+    return redirect(url_for('login'))
 
 
 @application.route('/spot/authenticate')
 
 def login() -> werkzeug.wrappers.response.Response:
-  callback = url_for(
-    'spotify_authorized',
-    next=request.args.get('next') or request.referrer or None,
-    _external=True
-  )
-  return spotify.authorize(callback=callback)
+    callback = url_for(
+        'spotify_authorized',
+        next=request.args.get('next') or request.referrer or None,
+        _external=True
+    )
+    return spotify.authorize(callback=callback)
 
 
 @application.route('/spot/authenticate/authorized')
 
-def spotify_authorized() -> str:
-  response = spotify.authorized_response()
-  if(response is None):
-    return 'Access denied: reason={0} error={1}'.format(
-      request.args['error_reason'],
-      request.args['error_description']
-    )
-  if isinstance(response, OAuthException):
-    return 'Access denied: {0}'.format(response.message)
+def spotify_authorized() -> typing.Union[typing.Text, werkzeug.wrappers.response.Response]:
+    response = spotify.authorized_response()
+    if(response is None):
+        return f'Access denied: reason={request.args["error_reason"]} error={request.args["error_description"]}'
+    if isinstance(response, OAuthException):
+        return f'Access denied: {response.message}'
 
+    session["oauth_token"] = response["access_token"]
 
-  session['oauth_token'] = response['access_token']
+    url = "https://api.spotify.com/v1/me"
 
-  url = "https://api.spotify.com/v1/me"
-  headers = {
-    'Accept': 'application/json', 
-    'Content-Type': 'application/json', 
-    'Authorization': 'Bearer {}'.format(session.get('oauth_token'))
-  }
+    headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {session.get("oauth_token")}'
+    }
 
-  req = requests.get(url, headers=headers)
-  text_response = json.loads(req.text)
+    req = requests.get(url, headers=headers)
+    text_response = json.loads(req.text)
 
-  # Set environment variables so they are accessible outside the scope of this application 
-  os.environ['user_id'] = text_response.get('id')
-  os.environ['username'] = text_response.get('display_name')
-  os.environ['oauth_token'] = response['access_token']
+    # Set environment variables so they are accessible outside the scope of this application
 
-  # Keep the variables alive in the session if you wanted to have it all in one script
-  session['user_id'] = text_response.get('id')
-  session['username'] = text_response.get('display_name')
+    os.environ['user_id'] = text_response.get('id')
+    os.environ['username'] = text_response.get('display_name')
+    os.environ['oauth_token'] = response['access_token']
 
-  session.pop('_flashes', None)
-  flash("Successfully authenticated: {}".format(os.environ['username']), 'success')
-  return redirect("/")
+    # Keep the variables alive in the session if you wanted to have it all in one script
+    session['user_id'] = text_response.get('id')
+    session['username'] = text_response.get('display_name')
+
+    session.pop('_flashes', None)
+    flash(f"Successfully authenticated: {os.environ['username']}", 'success')
+
+    return redirect("/")
 
 @application.route('/shutdown', methods=['GET','POST'])
+def shutdown() -> typing.Text:
+    """
+    Shutdown the server programatically
+    NOTE: this method is soon to be depreicated
 
-def shutdown():
-    function = request.environ.get('werkzeug.server.shutdown')
-    if(function is None):
-        raise RuntimeError("Not running the server!")
+    Return:
+        typing.Text: Message notifying the shutdown
+    """
+
+
+    if not(function := request.environ.get("werkzeug.server.shutdown")):
+        raise RuntimeError("Not running the server and I cannot shutdown")
+
     function()
     return "Server shutting down...."
 
 @spotify.tokengetter
+def get_spotify_oauth_token() -> typing.Text:
+    """
+    Get the OAuth token of the current browser session
 
-def get_spotify_oauth_token() -> str:
-  return session.get('oauth_token')
+    Return:
+        typing.Text: String representation of the OAuth token
+    """
+
+    return session["oauth_token"]

@@ -6,7 +6,7 @@ PKG_NAME = "SpotifyAuthenticator"
 
 application = Flask(PKG_NAME)
 
-configuration_path = "configuration.json"
+configuration_path = "/home/jared/Applications/SpotifyAuthenticatorFiles/configuration.json"
 
 if(not os.path.exists(configuration_path)):
     raise ValueError(f'[ERROR] Cannot find configuration at {configuration_path}')
