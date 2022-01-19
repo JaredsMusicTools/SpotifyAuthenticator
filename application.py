@@ -1,14 +1,9 @@
-#!/usr/bin/env python3.8
+#!/usr/bin/env python
 
-def placeholder():
-    """
-    this some how prevents circular dependencies
-    """
+"""
+Driver code for SpotifyAuthenticator
+"""
 
-    from SpotifyAuthenticator import application as app
-    from datetime import datetime
-    import threading
+from SpotifyAuthenticator import application as app
 
-    CREDENTIAL_SAVED_PTH = "credentials.json"
-    app.run()
-placeholder()
+app.run()

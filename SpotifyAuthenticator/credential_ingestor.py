@@ -10,7 +10,8 @@ import datetime
 import typing
 import pathlib
 
-class CredentialIngestor():
+
+class CredentialIngestor:
     """
     Class representation of the credentials file
     that is read in before authenticating the user
