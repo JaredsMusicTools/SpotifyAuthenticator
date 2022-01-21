@@ -19,7 +19,6 @@ import json
 import requests
 import werkzeug
 import typing
-import types
 from datetime import datetime, timedelta
 
 ######################################################################################
@@ -79,7 +78,7 @@ def index():
         ) as file_pointer:
             json.dump(credentials, file_pointer)
 
-        return redirect("/shutdown")
+        return redirect("/")
     return render_template("home.html")
 
 
