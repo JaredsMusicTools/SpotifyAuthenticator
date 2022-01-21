@@ -73,7 +73,7 @@ def index():
         }
 
         with open(
-            "/home/jared/Applications/SpotifyAuthenticatorFiles/credentials.json",
+            "/usr/src/app/credentials.json",
             "w",
             encoding="utf-8",
         ) as file_pointer:
