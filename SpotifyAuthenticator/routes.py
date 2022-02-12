@@ -78,7 +78,7 @@ def index():
         ) as file_pointer:
             json.dump(credentials, file_pointer)
 
-        return redirect("/")
+        return redirect("/") if not session["has_authenticated"] else render_template("home.html")
     return render_template("home.html")
 
 
@@ -143,6 +143,8 @@ def spotify_authorized() -> typing.Union[
 
     session.pop("_flashes", None)
     flash(f"Successfully authenticated: {os.environ['username']}", "success")
+
+    session["has_authenticated"] = True
 
     return redirect("/")
 
